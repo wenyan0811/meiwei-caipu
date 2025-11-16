@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美味菜谱 - 随时随地的美食助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+
+        .search-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-btn, .add-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .search-btn:hover, .add-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-select {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .recipes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .recipe-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .recipe-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .recipe-header {
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            color: white;
+            padding: 20px;
+            position: relative;
+        }
+
+        .recipe-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .recipe-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .recipe-content {
+            padding: 20px;
+        }
+
+        .recipe-description {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .recipe-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: #f0f0f0;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 50px auto;
+            padding: 0;
+            border-radius: 20px;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            color: white;
+            padding: 30px;
+            border-radius: 20px 20px 0 0;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .ingredients-section, .steps-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .ingredients-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .ingredients-list li {
+            background: #f8f9fa;
+            margin: 8px 0;
+            padding: 12px 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .steps-list {
+            counter-reset: step-counter;
+            list-style: none;
+            padding: 0;
+        }
+
+        .steps-list li {
+            counter-increment: step-counter;
+            background: #f8f9fa;
+            margin: 15px 0;
+            padding: 20px;
+            border-radius: 10px;
+            position: relative;
+            padding-left: 60px;
+        }
+
+        .steps-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .favorite-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .favorite-btn:hover {
+            background: #c0392b;
+        }
+
+        .favorite-btn.favorited {
+            background: #27ae60;
+        }
+
+        .add-recipe-form {
+            display: grid;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: grid;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .cancel-btn {
+            background: #95a5a6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .save-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .recipes-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                margin: 20px;
+                max-width: calc(100% - 40px);
+            }
+
+            .search-container {
+                flex-direction: column;
+            }
+
+            .filter-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .favorites-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .favorites-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .favorites-count {
+            background: #e74c3c;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>
+                <span>🍳</span>
+                美味菜谱
+                <span>📱</span>
+            </h1>
+            <p class="subtitle">随时随地的美食助手 - 支持所有设备</p>
+        </header>
+
+        <section class="search-section">
+            <div class="search-container">
+                <input type="text" class="search-input" id="searchInput" placeholder="搜索菜谱名称...">
+                <button class="search-btn" onclick="searchRecipes()">🔍 搜索</button>
+                <button class="add-btn" onclick="showAddRecipeModal()">➕ 添加菜谱</button>
+            </div>
+            <div class="filter-section">
+                <label>分类筛选：</label>
+                <select class="filter-select" id="categoryFilter" onchange="filterByCategory()">
+                    <option value="">全部分类</option>
+                    <option value="家常菜">家常菜</option>
+                    <option value="川菜">川菜</option>
+                    <option value="粤菜">粤菜</option>
+                    <option value="湘菜">湘菜</option>
+                    <option value="鲁菜">鲁菜</option>
+                    <option value="甜品">甜品</option>
+                    <option value="汤类">汤类</option>
+                    <option value="凉菜">凉菜</option>
+                </select>
+            </div>
+        </section>
+
+        <section class="favorites-section">
+            <div class="favorites-header">
+                <h3>❤️ 我的收藏</h3>
+                <span class="favorites-count" id="favoritesCount">0 个收藏</span>
+            </div>
+            <div id="favoritesList"></div>
+        </section>
+
+        <main>
+            <div class="recipes-grid" id="recipesGrid">
+                <!-- 菜谱卡片将在这里动态生成 -->
+            </div>
+        </main>
+    </div>
+
+    <!-- 菜谱详情模态框 -->
+    <div class="modal" id="recipeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close-btn" onclick="closeModal('recipeModal')">×</button>
+                <h2 id="modalTitle">菜谱标题</h2>
+                <div class="recipe-meta">
+                    <span id="modalCategory">分类</span>
+                    <span id="modalDifficulty">难度</span>
+                    <span id="modalTime">时间</span>
+                </div>
+            </div>
+            <div class="modal-body">
+                <p id="modalDescription">菜谱描述</p>
+                
+                <div class="ingredients-section">
+                    <h3 class="section-title">🥬 食材清单</h3>
+                    <ul class="ingredients-list" id="modalIngredients"></ul>
+                </div>
+                
+                <div class="steps-section">
+                    <h3 class="section-title">👨‍🍳 制作步骤</h3>
+                    <ol class="steps-list" id="modalSteps"></ol>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="favorite-btn" id="modalFavoriteBtn" onclick="toggleFavorite()">
+                        ❤️ 收藏菜谱
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加菜谱模态框 -->
+    <div class="modal" id="addRecipeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close-btn" onclick="closeModal('addRecipeModal')">×</button>
+                <h2>➕ 添加新菜谱</h2>
+            </div>
+            <div class="modal-body">
+                <form class="add-recipe-form" id="addRecipeForm">
+                    <div class="form-group">
+                        <label for="newRecipeName">菜谱名称 *</label>
+                        <input type="text" id="newRecipeName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="newRecipeCategory">分类 *</label>
+                        <select id="newRecipeCategory" required>
+                            <option value="">请选择分类</option>
+                            <option value="家常菜">家常菜</option>
+                            <option value="川菜">川菜</option>
+                            <option value="粤菜">粤菜</option>
+                            <option value="湘菜">湘菜</option>
+                            <option value="鲁菜">鲁菜</option>
+                            <option value="甜品">甜品</option>
+                            <option value="汤类">汤类</option>
+                            <option value="凉菜">凉菜</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="newRecipeDifficulty">难度 *</label>
+                        <select id="newRecipeDifficulty" required>
+                            <option value="">请选择难度</option>
+                            <option value="简单">简单</option>
+                            <option value="中等">中等</option>
+                            <option value="困难">困难</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="newRecipeTime">制作时间（分钟）*</label>
+                        <input type="number" id="newRecipeTime" min="1" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="newRecipeDescription">描述 *</label>
+                        <textarea id="newRecipeDescription" required placeholder="简单描述这道菜的特色..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="newRecipeIngredients">食材清单 *</label>
+                        <textarea id="newRecipeIngredients" required placeholder="每行一种食材，如：&#10;猪肉 500g&#10;生抽 2勺&#10;料酒 1勺"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="newRecipeSteps">制作步骤 *</label>
+                        <textarea id="newRecipeSteps" required placeholder="每行一个步骤，如：&#10;1. 猪肉切块，用料酒腌制15分钟&#10;2. 热锅下油，爆炒猪肉至变色&#10;3. 加入调料炒匀即可"></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="cancel-btn" onclick="closeModal('addRecipeModal')">取消</button>
+                        <button type="submit" class="save-btn">保存菜谱</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始菜谱数据
+        let recipes = [
+            {
+                id: 1,
+                name: "麻婆豆腐",
+                category: "川菜",
+                difficulty: "中等",
+                time: 30,
+                description: "经典川菜，麻辣鲜香，豆腐嫩滑，是下饭神器",
+                ingredients: ["嫩豆腐 400g", "猪肉末 100g", "郫县豆瓣酱 2勺", "生抽 1勺", "料酒 1勺", "花椒粉 1茶匙", "葱花 适量", "姜末 适量"],
+                steps: [
+                    "豆腐切成2cm见方的块，用盐水焯一下备用",
+                    "热锅下油，爆炒猪肉末至变色",
+                    "加入豆瓣酱、姜末炒出红油",
+                    "加入豆腐块，轻轻翻炒，加生抽、料酒调味",
+                    "用水淀粉勾芡，撒花椒粉和葱花即可"
+                ],
+                rating: 4.5
+            },
+            {
+                id: 2,
+                name: "糖醋排骨",
+                category: "家常菜",
+                difficulty: "中等",
+                time: 45,
+                description: "色泽红亮，酸甜可口，老少皆宜的经典菜品",
+                ingredients: ["排骨 500g", "生抽 2勺", "老抽 1勺", "料酒 2勺", "白糖 3勺", "醋 2勺", "盐 适量", "葱姜 适量"],
+                steps: [
+                    "排骨洗净切段，用料酒、盐腌制20分钟",
+                    "热锅下油，将排骨炸至金黄捞出",
+                    "锅内留少许油，下白糖炒出糖色",
+                    "加入排骨翻炒上色",
+                    "加入生抽、老抽、醋和适量水，焖煮20分钟",
+                    "大火收汁即可"
+                ],
+                rating: 4.8
+            },
+            {
+                id: 3,
+                name: "西红柿鸡蛋面",
+                category: "家常菜",
+                difficulty: "简单",
+                time: 15,
+                description: "简单快手，营养均衡，是很多人的comfort food",
+                ingredients: ["面条 200g", "西红柿 2个", "鸡蛋 2个", "葱花 适量", "盐 适量", "糖 1茶匙", "生抽 1勺"],
+                steps: [
+                    "西红柿切块，鸡蛋打散",
+                    "热锅下油，炒鸡蛋至半熟盛起",
+                    "锅内下西红柿块炒出汁水",
+                    "加入炒蛋，加盐、糖、生抽调味",
+                    "另起锅煮面条，将西红柿鸡蛋浇在面上即可"
+                ],
+                rating: 4.2
+            },
+            {
+                id: 4,
+                name: "蒸蛋羹",
+                category: "家常菜",
+                difficulty: "简单",
+                time: 20,
+                description: "嫩滑如布丁，营养丰富，适合全年龄段",
+                ingredients: ["鸡蛋 3个", "温水 150ml", "盐 适量", "生抽 1勺", "香油 几滴", "葱花 适量"],
+                steps: [
+                    "鸡蛋打散，加入温水和盐搅匀",
+                    "过筛去除泡沫",
+                    "盖上保鲜膜，水开后蒸8-10分钟",
+                    "出锅后淋上生抽和香油",
+                    "撒上葱花即可"
+                ],
+                rating: 4.6
+            },
+            {
+                id: 5,
+                name: "宫保鸡丁",
+                category: "川菜",
+                difficulty: "中等",
+                time: 25,
+                description: "麻辣鲜香，花生酥脆，川菜代表之一",
+                ingredients: ["鸡胸肉 300g", "花生米 50g", "干辣椒 10个", "花椒 1茶匙", "生抽 2勺", "老抽 1勺", "料酒 1勺", "糖 1勺", "醋 1勺", "葱姜蒜 适量"],
+                steps: [
+                    "鸡胸肉切丁，用料酒、生抽腌制15分钟",
+                    "花生米炸至金黄酥脆",
+                    "热锅下油，爆炒花椒、干辣椒出香味",
+                    "加入鸡丁炒至变色",
+                    "调入生抽、老抽、糖、醋炒匀",
+                    "最后加入花生米炒匀即可"
+                ],
+                rating: 4.7
+            },
+            {
+                id: 6,
+                name: "银耳莲子汤",
+                category: "甜品",
+                difficulty: "简单",
+                time: 60,
+                description: "滋润养颜，清甜润燥，是传统的养生甜品",
+                ingredients: ["银耳 10g", "莲子 30g", "红枣 6颗", "冰糖 适量", "枸杞 适量"],
+                steps: [
+                    "银耳提前泡发，撕成小朵",
+                    "莲子去心，红枣洗净",
+                    "银耳、莲子、红枣一起下锅煮40分钟",
+                    "加入冰糖再煮10分钟",
+                    "最后加入枸杞煮2分钟即可"
+                ],
+                rating: 4.4
+            }
+        ];
+
+        let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+        let currentRecipe = null;
+
+        // 初始化页面
+        function init() {
+            displayRecipes(recipes);
+            updateFavoritesCount();
+        }
+
+        // 显示菜谱列表
+        function displayRecipes(recipesToDisplay) {
+            const grid = document.getElementById('recipesGrid');
+            
+            if (recipesToDisplay.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <h3>😔 没有找到相关菜谱</h3>
+                        <p>试试其他关键词或分类吧</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = recipesToDisplay.map(recipe => `
+                <div class="recipe-card" onclick="showRecipeDetail(${recipe.id})">
+                    <div class="recipe-header">
+                        <div class="recipe-title">${recipe.name}</div>
+                        <div class="recipe-meta">
+                            <span>📂 ${recipe.category}</span>
+                            <span>⭐ ${recipe.rating}</span>
+                        </div>
+                    </div>
+                    <div class="recipe-content">
+                        <p class="recipe-description">${recipe.description}</p>
+                        <div class="recipe-tags">
+                            <span class="tag">🕒 ${recipe.time}分钟</span>
+                            <span class="tag">📊 ${recipe.difficulty}</span>
+                            ${favorites.includes(recipe.id) ? '<span class="tag">❤️ 已收藏</span>' : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 搜索菜谱
+        function searchRecipes() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = recipes.filter(recipe => 
+                recipe.name.toLowerCase().includes(searchTerm) ||
+                recipe.description.toLowerCase().includes(searchTerm) ||
+                recipe.category.toLowerCase().includes(searchTerm)
+            );
+            displayRecipes(filtered);
+        }
+
+        // 按分类筛选
+        function filterByCategory() {
+            const category = document.getElementById('categoryFilter').value;
+            if (category === '') {
+                displayRecipes(recipes);
+            } else {
+                const filtered = recipes.filter(recipe => recipe.category === category);
+                displayRecipes(filtered);
+            }
+        }
+
+        // 显示菜谱详情
+        function showRecipeDetail(recipeId) {
+            currentRecipe = recipes.find(r => r.id === recipeId);
+            if (!currentRecipe) return;
+
+            document.getElementById('modalTitle').textContent = currentRecipe.name;
+            document.getElementById('modalCategory').textContent = `📂 ${currentRecipe.category}`;
+            document.getElementById('modalDifficulty').textContent = `📊 ${currentRecipe.difficulty}`;
+            document.getElementById('modalTime').textContent = `🕒 ${currentRecipe.time}分钟`;
+            document.getElementById('modalDescription').textContent = currentRecipe.description;
+
+            // 显示食材
+            const ingredientsList = document.getElementById('modalIngredients');
+            ingredientsList.innerHTML = currentRecipe.ingredients.map(ingredient => 
+                `<li>${ingredient}</li>`
+            ).join('');
+
+            // 显示步骤
+            const stepsList = document.getElementById('modalSteps');
+            stepsList.innerHTML = currentRecipe.steps.map(step => 
+                `<li>${step}</li>`
+            ).join('');
+
+            // 更新收藏按钮状态
+            const favoriteBtn = document.getElementById('modalFavoriteBtn');
+            if (favorites.includes(currentRecipe.id)) {
+                favoriteBtn.textContent = '💚 已收藏';
+                favoriteBtn.classList.add('favorited');
+            } else {
+                favoriteBtn.textContent = '❤️ 收藏菜谱';
+                favoriteBtn.classList.remove('favorited');
+            }
+
+            showModal('recipeModal');
+        }
+
+        // 切换收藏状态
+        function toggleFavorite() {
+            if (!currentRecipe) return;
+
+            const index = favorites.indexOf(currentRecipe.id);
+            if (index > -1) {
+                favorites.splice(index, 1);
+                showNotification('已取消收藏');
+            } else {
+                favorites.push(currentRecipe.id);
+                showNotification('收藏成功！');
+            }
+
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            
+            // 更新按钮状态
+            const favoriteBtn = document.getElementById('modalFavoriteBtn');
+            if (favorites.includes(currentRecipe.id)) {
+                favoriteBtn.textContent = '💚 已收藏';
+                favoriteBtn.classList.add('favorited');
+            } else {
+                favoriteBtn.textContent = '❤️ 收藏菜谱';
+                favoriteBtn.classList.remove('favorited');
+            }
+
+            updateFavoritesCount();
+            displayRecipes(recipes); // 刷新列表显示
+        }
+
+        // 更新收藏数量
+        function updateFavoritesCount() {
+            document.getElementById('favoritesCount').textContent = `${favorites.length} 个收藏`;
+            
+            // 显示收藏列表
+            const favoritesList = document.getElementById('favoritesList');
+            if (favorites.length === 0) {
+                favoritesList.innerHTML = '<p style="color: #999; text-align: center;">暂无收藏的菜谱</p>';
+            } else {
+                const favoriteRecipes = recipes.filter(r => favorites.includes(r.id));
+                favoritesList.innerHTML = `
+                    <div class="recipes-grid">
+                        ${favoriteRecipes.map(recipe => `
+                            <div class="recipe-card" onclick="showRecipeDetail(${recipe.id})">
+                                <div class="recipe-header">
+                                    <div class="recipe-title">${recipe.name}</div>
+                                    <div class="recipe-meta">
+                                        <span>📂 ${recipe.category}</span>
+                                        <span>⭐ ${recipe.rating}</span>
+                                    </div>
+                                </div>
+                                <div class="recipe-content">
+                                    <p class="recipe-description">${recipe.description}</p>
+                                    <div class="recipe-tags">
+                                        <span class="tag">🕒 ${recipe.time}分钟</span>
+                                        <span class="tag">❤️ 已收藏</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+        }
+
+        // 显示添加菜谱模态框
+        function showAddRecipeModal() {
+            showModal('addRecipeModal');
+        }
+
+        // 添加新菜谱
+        document.getElementById('addRecipeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newRecipe = {
+                id: Date.now(),
+                name: document.getElementById('newRecipeName').value,
+                category: document.getElementById('newRecipeCategory').value,
+                difficulty: document.getElementById('newRecipeDifficulty').value,
+                time: parseInt(document.getElementById('newRecipeTime').value),
+                description: document.getElementById('newRecipeDescription').value,
+                ingredients: document.getElementById('newRecipeIngredients').value.split('\n').filter(i => i.trim()),
+                steps: document.getElementById('newRecipeSteps').value.split('\n').filter(s => s.trim()),
+                rating: 0
+            };
+
+            recipes.unshift(newRecipe);
+            displayRecipes(recipes);
+            closeModal('addRecipeModal');
+            showNotification('菜谱添加成功！');
+            
+            // 重置表单
+            this.reset();
+        });
+
+        // 显示模态框
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 关闭模态框
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // 显示通知
+        function showNotification(message) {
+            // 创建通知元素
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #27ae60;
+                color: white;
+                padding: 15px 25px;
+                border-radius: 8px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                z-index: 2000;
+                font-size: 16px;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            // 3秒后移除
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // 添加动画样式
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 搜索框回车事件
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchRecipes();
+            }
+        });
+
+        // 初始化
+        init();
+    </script>
+</body>
+</html>
